@@ -1,4 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100..900&display=swap');
 @import 'tailwindcss';
 @plugin '@tailwindcss/typography';
 @import 'tw-animate-css';
@@ -204,7 +203,7 @@
 }
 
 .rtl-text {
-  font-family: 'Vazirmatn', var(--font-sans);
+  font-family: var(--font-vazirmatn), var(--font-sans);
   direction: rtl;
   text-align: right;
 }
