@@ -817,7 +817,6 @@ export default function Page() {
         onCreateProject={createProject}
         onRenameProject={renameProject}
         onDeleteProject={deleteProject}
-        onSettingsClick={() => setIsSettingsOpen(true)}
         onImportProject={() => importInputRef.current?.click()}
         aiSettings={settings}
         onUpdateAISettings={updateSettings}
@@ -880,7 +879,7 @@ export default function Page() {
                 <GraphArea
                   key={`graph-${activeProjectId}`}
                   blocks={activeProject.blocks}
-                  ghostNote={activeProject.ghostNote}
+                  ghostNote={ghostNotes[ghostNotes.length - 1]}
                   projectName={activeProject.name}
                   onReEnrich={reEnrichBlock}
                   onTogglePin={handleTogglePin}

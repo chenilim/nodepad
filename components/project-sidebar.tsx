@@ -38,7 +38,6 @@ interface ProjectSidebarProps {
   onImportProject: () => void
   onRenameProject: (id: string, newName: string) => void
   onDeleteProject: (id: string) => void
-  onSettingsClick: () => void
   openToSettings?: boolean
   onSettingsOpened?: () => void
   // AI Settings
