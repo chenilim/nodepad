@@ -83,15 +83,23 @@ export function AboutPanel({ open, onClose }: AboutPanelProps) {
           <p className="mt-2 text-xs font-mono text-primary/60 uppercase tracking-widest">
             No chat · No prompts · AI that augments your thinking
           </p>
-          <p className="mt-3 text-xs text-muted-foreground/50">
-            A design experiment by{" "}
+          <p className="mt-3 text-xs text-muted-foreground/50 flex items-center gap-3 flex-wrap">
+            <span>
+              A design experiment by{" "}
+              <a
+                href="http://mskayyali.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-muted-foreground/70 hover:text-foreground underline underline-offset-2 transition-colors"
+              >
+                Saleh Kayyali
+              </a>
+            </span>
             <a
-              href="http://mskayyali.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-muted-foreground/70 hover:text-foreground underline underline-offset-2 transition-colors"
+              href="mailto:mskayyali@me.com?subject=nodepad%20feedback"
+              className="inline-flex items-center gap-1 font-mono text-[10px] uppercase tracking-widest text-primary/60 hover:text-primary border border-primary/25 hover:border-primary/50 px-2 py-0.5 rounded-sm transition-colors"
             >
-              Saleh Kayyali
+              Submit Feedback
             </a>
           </p>
           <p className="mt-1.5 text-xs text-muted-foreground/35">
