@@ -143,6 +143,7 @@ export interface EnrichResult {
   influencedByIndices: number[]
   isUnrelated: boolean
   mergeWithIndex: number | null
+  sources?: { url: string; title: string; siteName: string }[]
 }
 
 export async function enrichBlockClient(
@@ -243,5 +244,27 @@ You have live web access. For this note type, include 1–2 real source citation
   if (result.confidence != null) {
     result.confidence = Math.min(100, Math.max(0, Math.round(result.confidence)))
   }
+
+  // Extract clickable source links from response annotations.
+  // OpenRouter :online models return citations as annotations on the message object.
+  const annotations: Array<{ type: string; url_citation?: { url: string; title?: string } }> =
+    data.choices?.[0]?.message?.annotations ?? []
+  const seen = new Set<string>()
+  const sources = annotations
+    .filter(a => a.type === "url_citation" && a.url_citation?.url)
+    .map(a => {
+      const { url, title } = a.url_citation!
+      let siteName = ""
+      try { siteName = new URL(url).hostname.replace(/^www\./, "") } catch { /* ignore */ }
+      return { url, title: title || siteName, siteName }
+    })
+    .filter(s => {
+      if (seen.has(s.url)) return false
+      seen.add(s.url)
+      return true
+    })
+
+  if (sources.length > 0) result.sources = sources
+
   return result
 }
