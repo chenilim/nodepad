@@ -51,16 +51,23 @@ Return ONLY valid JSON:
 {"text": "...", "category": "..."}`
 
   const baseUrl = getBaseUrl(config)
-  const response = await fetch(`${baseUrl}/chat/completions`, {
-    method: "POST",
-    headers: getProviderHeaders(config),
-    body: JSON.stringify({
-      model,
-      messages: [{ role: "user", content: prompt }],
-      response_format: { type: "json_object" },
-      temperature: 0.7,
-    }),
-  })
+  let response: Response
+  try {
+    response = await fetch(`/api/llm-proxy`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        _baseUrl: baseUrl,
+        _headers: getProviderHeaders(config),
+        model,
+        messages: [{ role: "user", content: prompt }],
+        response_format: config.provider === "lm-studio" ? { type: "text" } : { type: "json_object" },
+        temperature: 0.7,
+      }),
+    })
+  } catch (error: any) {
+    throw new Error(`Failed to connect to proxy for ${config.provider} at ${baseUrl}. Ensure the server is running and accessible.`)
+  }
 
   if (!response.ok) {
     const err = await response.text()

@@ -5,7 +5,7 @@
  *  2. Adding the preset to AI_PROVIDER_PRESETS in lib/ai-settings.ts
  *  3. Creating the connector under app/api/<provider-id>/
  */
-export const LOCAL_PROVIDER_IDS = ["claude-cli"] as const
+export const LOCAL_PROVIDER_IDS = ["claude-cli", "lm-studio"] as const
 
 export type LocalProvider = (typeof LOCAL_PROVIDER_IDS)[number]
 

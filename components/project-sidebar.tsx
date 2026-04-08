@@ -349,7 +349,13 @@ export function ProjectSidebar({
                       <span className="font-mono text-[11px] text-muted-foreground/40">No key required</span>
                     </div>
                     <p className="font-mono text-[9px] text-muted-foreground leading-relaxed">
-                      Uses the <code className="text-primary/70">claude</code> CLI installed on this machine.
+                      {draft.provider === "claude-cli" ? (
+                        <>Uses the <code className="text-primary/70">claude</code> CLI installed on this machine.</>
+                      ) : draft.provider === "lm-studio" ? (
+                        <>Connects to LM Studio running on <code className="text-primary/70">127.0.0.1:1234</code>.</>
+                      ) : (
+                        "No API key required."
+                      )}
                     </p>
                   </div>
                 ) : (

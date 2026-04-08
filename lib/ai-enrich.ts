@@ -301,28 +301,32 @@ You have live web access. For this note type, include 1–2 real source citation
   const userMessage = `${langDirective}<note_to_enrich>${safeText}</note_to_enrich>${urlContext}${categoryContext}${forcedTypeContext}${globalContext}`
 
   const baseUrl = getBaseUrl(config)
-  const response = await fetch(`${baseUrl}/chat/completions`, {
-    method: "POST",
-    headers: getProviderHeaders(config),
-    body: JSON.stringify({
-      model,
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user",   content: userMessage },
-      ],
-      // OpenAI search-preview models reject both response_format AND temperature;
-      // when web_search_options is present, omit both and rely on the schemaHint
-      // in the system prompt to get structured JSON output.
-      ...(webSearchOptions === undefined
-        ? {
-            response_format: useStrictSchema
-              ? { type: "json_schema", json_schema: JSON_SCHEMA }
-              : { type: "json_object" },
-            temperature: 0.1,
-          }
-        : { web_search_options: webSearchOptions }),
-    }),
-  })
+  let response: Response
+  try {
+    response = await fetch(`/api/llm-proxy`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        _baseUrl: baseUrl,
+        _headers: getProviderHeaders(config),
+        model,
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user",   content: userMessage },
+        ],
+        ...(webSearchOptions === undefined
+          ? {
+              response_format: useStrictSchema
+                ? { type: "json_schema", json_schema: JSON_SCHEMA }
+                : (config.provider === "lm-studio" ? { type: "text" } : { type: "json_object" }),
+              temperature: 0.1,
+            }
+          : { web_search_options: webSearchOptions }),
+      }),
+    })
+  } catch (error: any) {
+    throw new Error(`Failed to connect to proxy for ${config.provider} at ${baseUrl}. Ensure the server is running and accessible.`)
+  }
 
   if (!response.ok) {
     const err = await response.text()

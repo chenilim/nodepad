@@ -43,14 +43,7 @@ Open [localhost:3000](http://localhost:3000).
 
 ### Running local models
 
-nodepad can run AI entirely on your machine via the [Claude CLI](https://docs.anthropic.com/en/docs/claude-code/overview), with no API key required. Because this spawns a local process, it must be explicitly enabled at startup.
-
-**Prerequisites**: install and authenticate the Claude CLI.
-
-```bash
-npm install -g @anthropic-ai/claude-code
-claude  # follow the login prompt
-```
+nodepad can run AI entirely on your machine, with no API key required. Because these bypass standard cloud providers, they must be explicitly enabled at startup.
 
 **Dev mode with local models:**
 
@@ -58,9 +51,22 @@ claude  # follow the login prompt
 npm run dev:with-local-models
 ```
 
-Once running, open Settings in the sidebar and select **Claude CLI** as the provider. No API key is needed — it uses the authenticated CLI on your machine.
+Once running, open Settings in the sidebar and select your preferred local provider.
 
-> Local model support is disabled in standard `dev` / `build` / `start` scripts. The `claude-cli` provider will not appear in the Settings panel, and the `/api/claude-cli` endpoint will return `403` unless the app was started with the `:with-local-models` variant.
+#### LM Studio
+1. Install [LM Studio](https://lmstudio.ai) and download any model (e.g., Llama 3 or Mistral).
+2. Go to the Local Server tab in LM Studio and start the server (default runs on `http://localhost:1234/v1`).
+3. In nodepad, select **LM Studio** as your provider. No API key is needed.
+
+#### Claude CLI
+1. Install and authenticate the [Claude CLI](https://docs.anthropic.com/en/docs/claude-code/overview).
+```bash
+npm install -g @anthropic-ai/claude-code
+claude  # follow the login prompt
+```
+2. In nodepad, select **Claude CLI** as your provider. It uses the authenticated CLI on your machine.
+
+> Local model support is disabled in standard `dev` / `build` / `start` scripts. Local providers will not appear in the Settings panel unless the app was started with the `:with-local-models` variant.
 
 ---
 

@@ -13,7 +13,7 @@ export interface AIModel {
   groundingModelId?: string
 }
 
-export type AIProvider = "openrouter" | "openai" | "zai" | "claude-cli"
+export type AIProvider = "openrouter" | "openai" | "zai" | "claude-cli" | "lm-studio"
 
 export interface AIProviderPreset {
   id: AIProvider
@@ -52,12 +52,20 @@ const ALL_PROVIDER_PRESETS: AIProviderPreset[] = [
     keyUrl: "",
     keyPlaceholder: "",
   },
+  {
+    id: "lm-studio",
+    label: "LM Studio",
+    baseUrl: "http://127.0.0.1:1234/v1",
+    keyUrl: "",
+    keyPlaceholder: "",
+  },
 ]
 
-/** Providers available at runtime — local providers are excluded unless the
- *  app was started/built with WITH_LOCAL_MODELS=true. */
+/** Providers available at runtime — local CLIs are excluded unless the
+ *  app was started/built with WITH_LOCAL_MODELS=true. 
+ *  LM Studio is always included as it's a standard HTTP endpoint. */
 export const AI_PROVIDER_PRESETS: AIProviderPreset[] = ALL_PROVIDER_PRESETS.filter(
-  p => !isLocalProvider(p.id) || WITH_LOCAL_MODELS
+  p => !isLocalProvider(p.id) || p.id === "lm-studio" || WITH_LOCAL_MODELS
 )
 
 export function getPreset(provider: AIProvider): AIProviderPreset {
@@ -122,6 +130,16 @@ export const CLAUDE_CLI_MODELS: AIModel[] = [
     label: "Claude Haiku 4.5",
     shortLabel: "Haiku",
     description: "Fast and lightweight",
+    supportsGrounding: false,
+  },
+]
+
+export const LM_STUDIO_MODELS: AIModel[] = [
+  {
+    id: "local-model",
+    label: "Local Model",
+    shortLabel: "Local",
+    description: "Currently loaded LM Studio model",
     supportsGrounding: false,
   },
 ]
@@ -201,6 +219,7 @@ export function getModelsForProvider(provider: AIProvider): AIModel[] {
   if (provider === "openai") return OPENAI_MODELS
   if (provider === "zai")    return ZAI_MODELS
   if (provider === "claude-cli") return CLAUDE_CLI_MODELS
+  if (provider === "lm-studio") return LM_STUDIO_MODELS
   return AI_MODELS // openrouter + safe fallback for any stale localStorage value
 }
 
@@ -242,7 +261,7 @@ export interface AIConfig {
 
 export function loadAIConfig(): AIConfig | null {
   const s = loadSettings()
-  if (!s.apiKey && s.provider !== "claude-cli") return null
+  if (!s.apiKey && !isLocalProvider(s.provider)) return null
   const models = getModelsForProvider(s.provider)
   const model = models.find(m => m.id === s.modelId)
   // Use the matched model's id if found; otherwise fall back to the first model
@@ -252,14 +271,14 @@ export function loadAIConfig(): AIConfig | null {
   const modelId = model?.id ?? models[0]?.id ?? s.modelId ?? DEFAULT_MODEL_ID
   // Z.ai does not support grounding; only openrouter and openai do
   const supportsGrounding =
-    s.provider !== "claude-cli" &&
+    !isLocalProvider(s.provider) &&
     s.webGrounding &&
     (model?.supportsGrounding ?? false)
   return { apiKey: s.apiKey, modelId, supportsGrounding, provider: s.provider, customBaseUrl: s.customBaseUrl }
 }
 
 export function getBaseUrl(config: AIConfig): string {
-  return getPreset(config.provider).baseUrl
+  return config.customBaseUrl?.trim() || getPreset(config.provider).baseUrl
 }
 
 export function getProviderHeaders(config: AIConfig): Record<string, string> {
@@ -268,7 +287,7 @@ export function getProviderHeaders(config: AIConfig): Record<string, string> {
   }
   const base: Record<string, string> = {
     "Content-Type": "application/json",
-    "Authorization": `Bearer ${config.apiKey}`,
+    "Authorization": `Bearer ${config.provider === "lm-studio" ? "dummy-key" : config.apiKey}`,
   }
   if (config.provider === "openrouter") {
     base["HTTP-Referer"] = "https://nodepad.space"

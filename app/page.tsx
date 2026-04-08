@@ -19,6 +19,7 @@ import { generateGhostClient } from "@/lib/ai-ghost"
 import { exportToMarkdown, downloadMarkdown, copyToClipboard } from "@/lib/export"
 import { downloadNodepadFile, parseNodepadFile, NodepadParseError } from "@/lib/nodepad-format"
 import { detectContentType } from "@/lib/detect-content-type"
+import { isLocalProvider } from "@/lib/local-models"
 
 function generateId() {
   return Math.random().toString(36).substring(2, 10)
@@ -357,8 +358,10 @@ export default function Page() {
           lastGhostTexts: [...(p.lastGhostTexts || []), data.text].slice(-10),
         }
       }))
-    } catch (e) {
-      console.error("Ghost note generation failed", e)
+    } catch (e: any) {
+      if (!e?.message?.includes("No API key")) {
+        console.error("Ghost note generation failed", e)
+      }
       setProjects(prev => prev.map(p => p.id === projectId
         ? { ...p, ghostNotes: (p.ghostNotes || []).filter(n => n.id !== ghostId) }
         : p
@@ -492,11 +495,13 @@ export default function Page() {
 
             setTimeout(() => generateGhostNote(projectId), 2500)
         } catch (e: any) {
-          console.error(e)
           const isNoKey = e?.message?.includes("No API key") || false
+          if (!isNoKey) {
+            console.warn("Enrichment failed:", e.message)
+          }
           setProjects((current: Project[]) => current.map(proj => proj.id === projectId ? {
             ...proj,
-            blocks: proj.blocks.map(b => b.id === id ? { ...b, isEnriching: false, isError: true, statusText: isNoKey ? "no-api-key" : undefined } : b)
+            blocks: proj.blocks.map(b => b.id === id ? { ...b, isEnriching: false, isError: true, statusText: isNoKey ? "no-api-key" : e?.message } : b)
           } : proj))
         }
       }
@@ -882,7 +887,7 @@ export default function Page() {
           }}
         />
 
-        {!settings.apiKey && settings.provider !== "claude-cli" && (
+        {!settings.apiKey && !isLocalProvider(settings.provider) && (
           <div className="flex items-center justify-center gap-3 px-4 py-2 bg-amber-950/80 border-b border-amber-800/60 text-amber-200 text-xs shrink-0">
             <span className="opacity-80">⚡ AI enrichment is inactive — add an API key to classify and annotate your notes.</span>
             <div className="flex items-center gap-2 shrink-0">
