@@ -41,6 +41,27 @@ Open [localhost:3000](http://localhost:3000).
 
 **Enable web grounding** (optional): toggle "Web grounding" in Settings to let the AI cite real sources for claims, questions, and references. Supported on OpenRouter `:online` models and OpenAI search-preview models.
 
+### Running local models
+
+nodepad can run AI entirely on your machine via the [Claude CLI](https://docs.anthropic.com/en/docs/claude-code/overview), with no API key required. Because this spawns a local process, it must be explicitly enabled at startup.
+
+**Prerequisites**: install and authenticate the Claude CLI.
+
+```bash
+npm install -g @anthropic-ai/claude-code
+claude  # follow the login prompt
+```
+
+**Dev mode with local models:**
+
+```bash
+npm run dev:with-local-models
+```
+
+Once running, open Settings in the sidebar and select **Claude CLI** as the provider. No API key is needed — it uses the authenticated CLI on your machine.
+
+> Local model support is disabled in standard `dev` / `build` / `start` scripts. The `claude-cli` provider will not appear in the Settings panel, and the `/api/claude-cli` endpoint will return `403` unless the app was started with the `:with-local-models` variant.
+
 ---
 
 ## Providers & Models
